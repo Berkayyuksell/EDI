@@ -15,26 +15,28 @@
     <table class="table table-dark table-striped">
         <thead>
             <tr>
-                <th>id</th>
-                <th>store id deliverer</th>
-                <th>store id reciever</th>
-                <th>bill_of_transport </th>
-                <th>bill_of_transport_date</th>
-                <th>package grouping number</th>
-                <th>box ean number</th>
+                <th>STORE ID</th>
+                <th>bill of transport</th>
+                <th>ean number</th>
+                <th>item number </th>
+                <th>item description</th>
+                <th>colour</th>
+                <th>retail price</th>
                 <th>İşlemler</th>
             </tr>
         </thead>
+
         <tbody>
             @foreach($packagepDetail as $pack)
                 <tr>
-                    <td>{{ $pack->id }}</td>
-                    <td>{{ $pack->store_id_deliverer }}</td>
-                    <td>{{ $pack->store_id_receiver  }}</td>
+                    <td>{{ $pack->store_id_receiver }}</td>
                     <td>{{ $pack->bill_of_transport }}</td>
-                    <td>{{ $pack->bill_of_transport_date }}</td>
-                    <th>{{ $pack->package_grouping_number}}</th>
-                    <th> <a href="{{ route('packing.pdetail', $pack->bill_of_transport) }}" class = "btn btn-sm btn-primary">Detay</a></th>
+                    <td>{{ $pack->ean_number  }}</td>
+                    <td>{{ $pack->item_number }}</td>
+                    <td>{{ $pack->item_description }}</td>
+                    <th>{{ $pack->colour}}</th>
+                    <th> {{$pack->retail_price_1 }}</th>
+                    <th> <a href="{{ route('packing.pdetail', $pack->bill_of_transport) }}" class = "btn btn-sm btn-primary">ÜRÜNÜ BİLDİR</a></th>
                 </tr>
             @endforeach
         </tbody>

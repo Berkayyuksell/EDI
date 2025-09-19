@@ -25,6 +25,8 @@ class ProcessFilesCommand extends Command
             
         }
         $this->processor->transferFileIn();
-        $this->processor->runBatFİle();
+        
+        // $this->processor->runBatFİle();
+
     }
 }

@@ -3,6 +3,9 @@
 namespace App\Console\Commands;
 use App\Services\SalesReportService;
 use Illuminate\Console\Command;
+use App\Services\FileProcessorService;
+use Illuminate\Support\Facades\Log;
+
 
 class GenerateSalesReport extends Command
 {
@@ -28,7 +31,7 @@ class GenerateSalesReport extends Command
     /**
      * Execute the console command.
      */
-    public function handle(SalesReportService $service)
+    public function handle(SalesReportService $service,FileProcessorService $processor)
     {
         ini_set('memory_limit', '-1');
         $startDate = $this->argument('startDate');
@@ -37,9 +40,10 @@ class GenerateSalesReport extends Command
         $storeID = $this->argument('storeID');
 
         $service->generateReport($startDate, $endDate, $transactionDate, $storeID);
-
-        $this->info("Sales report generated successfully!");
         
+        Log::info('Raporlama basarili');
+        $processor->runBatFile();
+        $processor->transferFileOut();
            
     }
 }

@@ -21,6 +21,7 @@
                 <th>bill_of_transport </th>
                 <th>bill_of_transport_date</th>
                 <th>ADRESS</th>
+                <th>Approve</th>
                 <th>Aksiyon</th>
             </tr>
         </thead>
@@ -33,6 +34,7 @@
                     <td>{{ $pack->bill_of_transport }}</td>
                     <td>{{ $pack->bill_of_transport_date }}</td>
                     <td>{{ $pack->recipient}}</td>
+                    <th>{{ $pack->isApprove}}</th>
                     <td><a href="{{ route('packing.detail', $pack->bill_of_transport) }}" class="btn btn-sm btn-primary">
                         Detay
                     </a>

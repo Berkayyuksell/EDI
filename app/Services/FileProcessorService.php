@@ -54,7 +54,7 @@ class FileProcessorService
     }
 
 
-    public function runBatFİle(): void{
+    public function runBatFile(): void{
              $batFilePath = 'C:\Users\Mtsoft\Desktop\test.bat';; // Bat dosyasının yolu
     
     // Dosya varlığını kontrol et

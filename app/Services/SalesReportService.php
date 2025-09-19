@@ -26,7 +26,9 @@ class SalesReportService
 
         $Stores = [
          'M06' => '5009',
-         'M07' => '3957'
+         'M07' => '9282',
+         'M08' => '6412',
+         'INT01' => '9298'
         ];
         foreach ($Stores as $NebimStoreID=>$StoreID) {
             $data = DB::connection('sqlsrv')->select('EXEC SALES_EDI ?, ?, ?', [$startDate, $endDate, $NebimStoreID]);
@@ -43,7 +45,6 @@ class SalesReportService
         $content[] = $this->buildTrailer(count($data), $transactionDate , $StoreID);
         
          Storage::disk('dataexchange')->append($this->filePath, implode("\n", $content));
-         //$fileService->cleanDirectory();
 
         }
 

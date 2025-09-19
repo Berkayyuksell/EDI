@@ -45,24 +45,16 @@ class ArrivalConfReportService
 
     }
 
-    protected function buildHeader(string $transactionDate , $storeID):string{
-         return null;
-    }
-    
-    protected function buildTrailer(int $totalRows, string $transactionDate, string $storeID): string
+    protected function buildHeader(string $transactionDate,string $StoreID): string
     {
-        return null;
+        return str_pad('**INIT**', 8, ' ', STR_PAD_RIGHT)
+            . str_pad('VENDTRAN', 8, ' ', STR_PAD_RIGHT)
+            . str_pad($transactionDate, 8, '0', STR_PAD_LEFT)
+            . str_pad($StoreID ?? '' ,4,' ',STR_PAD_LEFT);
     }
 
 
-    protected function buildLine(array $rowArr):string{
 
-         $line;
-
-        return $line;
-
-
-    }
 
 
 }

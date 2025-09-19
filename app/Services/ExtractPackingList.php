@@ -69,6 +69,7 @@ class ExtractPackingList
             'importer' => trim(substr($line, 172, 70)),
             'vat_number' => trim(substr($line, 242, 11)),
             'goods_collecting_address' => trim(substr($line, 253, 95)),
+            'isApprove' => '0',
             'created_at' => now(),
             'updated_at' => now(),
         ];
