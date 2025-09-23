@@ -1,3 +1,9 @@
+@extends('layouts.app')
+
+@section('title', 'Gelen Paketler')
+
+@section('content')
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -16,6 +22,7 @@
         <thead>
             <tr>
                 <th>id</th>
+                <th>store name</th>
                 <th>store id deliverer</th>
                 <th>store id reciever</th>
                 <th>bill_of_transport </th>
@@ -29,17 +36,54 @@
             @foreach($package as $pack)
                 <tr>
                     <td>{{ $pack->id }}</td>
+                                        @php
+                    $storeNames = [
+                        '3957' => 'Emaar point',
+                        '5009' => 'Ankara Cepa',
+                        '6412' => 'Koru Florya',
+                        '9282' => 'Emaar Magaza',
+                        '9283' => 'Stefanel WEB',
+                    ];
+                     @endphp
+
+                    <td>{{ $storeNames[$pack->store_id_receiver] ?? $pack->store_id_receiver }}</td>
                     <td>{{ $pack->store_id_deliverer }}</td>
                     <td>{{ $pack->store_id_receiver  }}</td>
                     <td>{{ $pack->bill_of_transport }}</td>
                     <td>{{ $pack->bill_of_transport_date }}</td>
                     <td>{{ $pack->recipient}}</td>
-                    <th>{{ $pack->isApprove}}</th>
-                    <td><a href="{{ route('packing.detail', $pack->bill_of_transport) }}" class="btn btn-sm btn-primary">
-                        Detay
-                    </a>
-                <a class = "btn btn-sm btn-primary "> ONAYLA</a>
-            </td>
+                    @if($pack->isApprove == 1)
+                        <td class="text-center text-success">
+                            <i class="bi bi-check-circle-fill"></i> Onaylı
+                        </td>
+                    @else
+                        <td class="text-center text-secondary">
+                            <i class="bi bi-clock-fill"></i> Yolda
+                        </td>
+                    @endif
+
+
+
+           <td>
+    <div class="d-flex">
+        <!-- Detay butonu -->
+        <a href="{{ route('packing.detail', $pack->bill_of_transport) }}" 
+           class="btn btn-sm btn-primary me-2">
+            Detay
+        </a>
+
+        <!-- Onayla butonu -->
+        <form action="{{ route('packing.approve', $pack->bill_of_transport) }}" 
+              method="POST"
+              onsubmit="return confirm('Bu paketi onaylamak istediğinize emin misiniz?')">
+            @csrf
+            <button type="submit" class="btn btn-sm btn-success">
+                Onayla
+            </button>
+        </form>
+    </div>
+</td>
+
                     
                 </tr>
             @endforeach
@@ -59,3 +103,5 @@
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
 </head>
 </html>
+
+@endsection

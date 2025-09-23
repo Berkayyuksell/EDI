@@ -1,3 +1,9 @@
+@extends('layouts.app')
+
+@section('title', 'Gelen Paketler')
+
+@section('content')
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -32,7 +38,6 @@
                 <th>Colour</th>
                 <th>Retail Price</th>
                 <th>quantity</th>
-                <th>İşlemler</th>
             </tr>
         </thead>
         <tbody>
@@ -48,11 +53,7 @@
                 <td>{{ $pack->colour }}</td>
                 <td>{{ $pack->retail_price_1 }}</td>
                 <td>{{ $pack->quantity}}</td>
-                <td>
-                    <button class="btn btn-sm btn-primary report-btn" 
-                            data-bill="{{ $pack->bill_of_transport }}">ÜRÜNÜ BİLDİR</button>
-                </td>
-            </tr>
+
             @endforeach
         </tbody>
     </table>
@@ -135,3 +136,6 @@
 </script>
 </body>
 </html>
+
+
+@endsection

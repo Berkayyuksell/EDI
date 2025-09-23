@@ -7,54 +7,87 @@ use Illuminate\Support\Facades\Storage;
 
 class ArrivalConfReportService
 {
+    protected string $filePath;
+
     public function __construct() {
         ini_set('max_execution_time', 0);
     }
 
-
-    public function generateReport(string $startDate,string $endDate, string $transactionDate , string $storeID)
+    public function generateReport()
     {
-        
-         $clientCode = 'nnnnnnnnn';
-         $fileName = 'AR1' . str_pad($clientCode, 9, '0', STR_PAD_LEFT) . '_' . date('Ymd') . '.TXT';
+        $transactionDateTime = date('Ymd'); 
 
-         $this->filePath = $fileName;
-         Storage::disk('dataexchange')->put($this->filePath, '');
+        // isApprove = 1 ve isSend = 0 olan kayıtları çek
+        $records = DB::table('zt_packing_header')
+            ->where('isApprove', 1)
+            ->where('isSend', 0)
+            ->orderBy('store_id_receiver')
+            ->get();
 
-   
-
-         $data = DB::connection('sqlsrv')->select('EXEC dbo.MissingEAN_EDI ?, ?', [$startDate, $endDate]);
-        
-           $content = [];
-        
-        // Header ekle
-        $content[] = $this->buildHeader($transactionDate, $storeID);
-        
-        // Her satırı işle ve array'e ekle
-        foreach ($data as $row) {
-            $rowArr = (array)$row;
-            $content[] = $this->buildLine($rowArr);
+        // Eğer veri yoksa TXT oluşturma
+        if ($records->isEmpty()) {
+            return null; // boşsa hiçbir şey yapma
         }
-        
-        // Trailer ekle
-        $content[] = $this->buildTrailer(count($data), $transactionDate, $storeID);
-        
-        // Tek seferde dosyaya yaz - BU EN ÖNEMLİ KISIM
-        Storage::disk('dataexchange')->put($this->filePath, implode("\n", $content));
-       
 
+        // Dosya adı
+        $this->filePath = 'AR1'.'000029991_' . $transactionDateTime . '.TXT';
+
+        $content = [];
+
+        // Store ID'ye göre gruplama
+        $grouped = $records->groupBy('store_id_receiver');
+
+        foreach ($grouped as $storeId => $storeRecords) {
+            // Header
+            $content[] = $this->buildHeader($transactionDateTime, $storeId);
+
+            // Detaylar
+            foreach ($storeRecords as $row) {
+                $content[] = $this->buildDetailLine($row,$transactionDateTime);
+            }
+
+            // Trailer
+            $content[] = $this->buildTrailer($transactionDateTime, count($storeRecords), $storeId);
+
+            // Gruplandıktan sonra bu store_id'nin kayıtlarını isSend = 1 yap
+            DB::table('zt_packing_header')
+                ->whereIn('id', $storeRecords->pluck('id'))
+                ->update(['isSend' => 1]);
+        }
+
+        // Dosyaya yaz
+        Storage::disk('dataexchange')->put($this->filePath, implode("\n", $content));
+
+        return $this->filePath; // oluşturulan dosya ismini döndürüyor
     }
 
-    protected function buildHeader(string $transactionDate,string $StoreID): string
+    protected function buildHeader(string $transactionDateTime, string $storeId): string
     {
         return str_pad('**INIT**', 8, ' ', STR_PAD_RIGHT)
-            . str_pad('VENDTRAN', 8, ' ', STR_PAD_RIGHT)
-            . str_pad($transactionDate, 8, '0', STR_PAD_LEFT)
-            . str_pad($StoreID ?? '' ,4,' ',STR_PAD_LEFT);
+            . str_pad('ARRICONF', 8, ' ', STR_PAD_RIGHT)
+            . $transactionDateTime
+            . str_pad($storeId, 4, '0', STR_PAD_LEFT);
     }
 
+    protected function buildDetailLine(object $row,string $transactionDateTime): string
+    {
+        return str_pad('ARRICONF', 8, ' ', STR_PAD_RIGHT)
+            . str_pad($row->store_id_receiver ?? '0', 4, '0', STR_PAD_LEFT)
+            . $transactionDateTime
+            . str_pad($row->bill_of_transport ?? '0', 9, '0', STR_PAD_LEFT)
+            . str_pad($row->bill_of_transport_date ? date('Ymd', strtotime($row->bill_of_transport_date)) : '00000000', 8, '0', STR_PAD_LEFT)
+            . '0000000000'
+            . '00000000';
+    }
 
+    protected function buildTrailer(string $transactionDateTime, int $recordCount, string $storeId): string
+    {
+        $totalRecords = $recordCount + 2; // header + detaylar + trailer
 
-
-
+        return str_pad('**FINE**', 8, ' ', STR_PAD_RIGHT)
+            . str_pad('ARRICONF', 8, ' ', STR_PAD_RIGHT)
+            . $transactionDateTime
+            . str_pad($storeId, 4, '0', STR_PAD_LEFT)
+            . str_pad($totalRecords, 7, '0', STR_PAD_LEFT);
+    }
 }

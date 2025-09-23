@@ -21,11 +21,11 @@ return Application::configure(basePath: dirname(__DIR__))
     })
     ->withSchedule(function (Schedule $schedule) {
         $today = Carbon::now()->format('Ymd');
+        $schedule->command('sales:generate-report ' .  $today . ' ' . $today . ' ' . $today . ' 29991')->timezone('Europe/Istanbul')->dailyAt('23:00');
+        $schedule->command('arrivalconf:generate-report')->timezone('Europe/Istanbul')->dailyAt('23:02');
+        $schedule->command('goodsman:generate-report')->timezone('Europe/Istanbul')->dailyAt('23:04');
+        $schedule->command('files:process')->timezone('Europe/Istanbul')->dailyAt('23:06');
 
-        $schedule->command('sales:generate-report ' .  $today . ' ' . $today . ' ' . $today . ' 29991')->dailyAt('15:07')->timezone('Europe/Istanbul');
-        //$schedule->command('goodsman:generate-report  ' . $today . ' ' . $today . ' ' . $today . ' 29991')->everyMinute();
-        //$schedule->command('missean:generate-report  ' .  $today . ' ' . $today . ' ' . $today . ' 29991')->everyMinute();
-        //$schedule->command('stockcount:generate-report  ' .  $today . ' ' . $today . ' ' . $today . ' 29991')->everyMinute();
-        //$schedule->command('files:process')->everyMinute();
     })
     ->create();
+

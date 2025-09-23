@@ -47,7 +47,7 @@ class FileProcessorService
 
             Storage::disk('dataexchange_backupOut')->put($file,$contents);
 
-            Storage::disk('dataexchange')->delete($file);
+            //Storage::disk('dataexchange')->delete($file);
 
 
         }
@@ -55,7 +55,7 @@ class FileProcessorService
 
 
     public function runBatFile(): void{
-             $batFilePath = 'C:\Users\Mtsoft\Desktop\test.bat';; // Bat dosyasının yolu
+             $batFilePath = 'C:\Users\Mtsoft\Desktop\test.bat'; // Bat dosyasının yolu
     
     // Dosya varlığını kontrol et
     if (!file_exists($batFilePath)) {

@@ -1,86 +1,127 @@
 <?php
+
 namespace App\Services;
+
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
-use Illuminate\Support\Facades\Log; 
 
 class GoodsManReportService
 {
-    private $filePath;
-    
+    protected string $filePath;
+
     public function __construct() {
         ini_set('max_execution_time', 0);
-        ini_set('memory_limit', '512M');
     }
-    
-    public function GenerateReport(string $startDate, string $endDate, string $transactionDate, string $storeID)
-    {
-        $clientCode = '29991';
-        $fileName = 'PAD' . str_pad($clientCode, 9, '0', STR_PAD_LEFT) . '_' . date('Ymd') . '.TXT';
-        $this->filePath = $fileName;
-        
 
-        $data = DB::connection('sqlsrv')->select('EXEC dbo.GoodsMan_EDI ?, ?', [$startDate, $endDate]);
-        
-   
-        $content = [];
-        
-        // Header ekle
-        $content[] = $this->buildHeader($transactionDate, $storeID);
-        
-        // Her satırı işle ve array'e ekle
-        foreach ($data as $row) {
-            $rowArr = (array)$row;
-            $content[] = $this->buildLine($rowArr);
+    public function generateReport()
+    {
+        $transactionDateTime = date('Ymd'); 
+
+        // isSend = 0 olan kayıtları çek
+        $records = DB::table('package_reports')
+            ->where('isSend', 0)
+            ->orderBy('store_id_receiver')
+            ->get();
+
+        if ($records->isEmpty()) {
+            return null; // veri yoksa dosya oluşturma
         }
-        
-        // Trailer ekle
-        $content[] = $this->buildTrailer(count($data), $transactionDate, $storeID);
-        
-        // Tek seferde dosyaya yaz - BU EN ÖNEMLİ KISIM
+
+        // Dosya adı
+        $this->filePath = 'PAD' . '000029991_' . $transactionDateTime . '.TXT';
+
+        $content = [];
+
+        // Store ID’ye göre gruplama
+        $grouped = $records->groupBy('store_id_receiver');
+
+        foreach ($grouped as $storeId => $storeRecords) {
+            // Header
+            $content[] = $this->buildHeader($transactionDateTime, $storeId);
+
+            // Detail
+            foreach ($storeRecords as $row) {
+                $content[] = $this->buildDetailLine($row,$transactionDateTime);
+            }
+
+            // Trailer
+            $content[] = $this->buildTrailer($transactionDateTime, count($storeRecords), $storeId);
+
+            // Kayıtları güncelle
+            DB::table('package_reports')
+                ->whereIn('id', $storeRecords->pluck('id'))
+                ->update(['isSend' => 1]);
+        }
+
+        // Dosyaya yaz
         Storage::disk('dataexchange')->put($this->filePath, implode("\n", $content));
+
+        return $this->filePath;
     }
-    
-    protected function buildHeader(string $transactionDate, string $storeID): string
+
+    protected function buildHeader(string $transactionDateTime, string $storeId): string
     {
         return str_pad('**INIT**', 8, ' ', STR_PAD_RIGHT)
             . str_pad('MERCTRAN', 8, ' ', STR_PAD_RIGHT)
-            . str_pad($transactionDate, 8, '0', STR_PAD_LEFT)
-            . str_pad($storeID, 4, '0', STR_PAD_LEFT);
+            . $transactionDateTime
+            . str_pad($storeId, 4, '0', STR_PAD_LEFT);
     }
-    
-    protected function buildLine(array $rowArr): string
+
+    protected function buildDetailLine(object $row,string $transactionDateTime): string
     {
-        // String birleştirme yerine array kullan - DAHA HIZLI
-        return str_pad($rowArr['Procedure Name'] ?? '', 8, ' ', STR_PAD_LEFT)
-            . str_pad($rowArr['Transaction-date'] ?? '', 8, '0', STR_PAD_LEFT)
-            . str_pad($rowArr['StoreID'] ?? '', 4, '0', STR_PAD_LEFT)
-            . str_pad($rowArr['Trans-Code (Cod-classe-Mov)'] ?? '', 4, '0', STR_PAD_LEFT)
-            . str_pad($rowArr['EAN-number'] ?? '', 13, ' ', STR_PAD_LEFT)
-            . '+' . str_pad((string)($rowArr['Quantity'] ?? '0'), 6, '0', STR_PAD_LEFT)
-            . str_pad($rowArr['Sign of quantity'] ?? '', 1, ' ', STR_PAD_LEFT)
-            . str_pad($rowArr['Recipient StoreID'] ?? '', 4, '0', STR_PAD_LEFT)
-            . str_pad($rowArr['Delivery number'] ?? '', 16, ' ', STR_PAD_LEFT)
-            . str_pad($rowArr['Delivery date'] ?? '', 8, '0', STR_PAD_LEFT)
-            . str_pad($rowArr['Package EAN-number'] ?? '', 13, '0', STR_PAD_LEFT)
-            . str_pad($rowArr['Transfer request EAN number'] ?? '', 13, '0', STR_PAD_LEFT)
-            . str_pad($rowArr['TO number'] ?? '', 9, '0', STR_PAD_LEFT)
-            . str_pad($rowArr['Return number'] ?? '', 9, '0', STR_PAD_LEFT)
-            . str_pad($rowArr['Reconditioning flag'] ?? '', 1, '0', STR_PAD_LEFT)
-            . str_pad($rowArr['Currency code'] ?? '', 3, ' ', STR_PAD_LEFT)
-            . str_pad($rowArr['Unit cost price'] ?? '', 15, ' ', STR_PAD_LEFT)
-            . str_pad($rowArr['Cause'] ?? '', 4, ' ', STR_PAD_LEFT)
-            . str_pad($rowArr['Cause description'] ?? '', 25, ' ', STR_PAD_LEFT);
+         $causeCode = '0000'; 
+    $comment = substr($row->comment ?? '', 0, 25); // default comment
+
+    switch ($row->transaction_code) {
+        case '0151':
+            if (empty($row->cause_code) || $row->cause_code === '0070') {
+                $causeCode = '0070';
+                $comment = 'Unsellable goods';
+            }
+            break;
+        case '0152': // Örnek flood transaction
+            $causeCode = '0071';
+            $comment = 'Flood';
+            break;
+        case '0153': // Örnek theft transaction
+            $causeCode = '0072';
+            $comment = 'Theft';
+            break;
+        default:
+            $causeCode = '0000';
+            break;
     }
-    
-    protected function buildTrailer(int $totalRows, string $transactionDate, string $storeID): string
+
+        return str_pad('MERCTRAN', 8, ' ', STR_PAD_RIGHT)
+            . str_pad($row->store_id_receiver ?? '0', 4, '0', STR_PAD_LEFT)
+            . $transactionDateTime
+            . str_pad($row->transaction_code ?? '', 4, ' ', STR_PAD_RIGHT)
+            . str_pad($row->ean_number ?? '0', 13, '0', STR_PAD_LEFT)
+            . '+'
+            . str_pad($row->quantity ?? 0, 6, '0', STR_PAD_LEFT)
+            . '+'
+            . '0000'
+            . str_pad($row->bill_of_transport ?? '0', 16, '0', STR_PAD_LEFT)
+            . str_replace('-', '', $row->bill_of_transport_date ?? '00000000')
+            . str_pad($row->box_ean_number ?? '0', 13, '0', STR_PAD_LEFT)
+            . str_repeat('0', 13) // Transfer request EAN
+            . str_repeat('0', 9)  // TO number
+            . str_repeat('0', 9)  // Return number
+            . '0'                 
+            . 'TRY'
+            . str_pad(number_format((float)$row->retail_price,2,'',''), 15, '0', STR_PAD_LEFT)
+            . str_pad($row->cause_code ?? '', 4, ' ', STR_PAD_RIGHT)
+            . str_pad($comment, 25, ' ', STR_PAD_RIGHT);
+
+    }
+
+    protected function buildTrailer(string $transactionDateTime, int $recordCount, string $storeId): string
     {
+        $totalRecords = $recordCount + 2; // header + detail + trailer
         return str_pad('**FINE**', 8, ' ', STR_PAD_RIGHT)
-            . str_pad('VENDTRAN', 8, ' ', STR_PAD_RIGHT)
-            . str_pad($transactionDate, 8, '0', STR_PAD_LEFT)
-            . str_pad($storeID, 4, '0', STR_PAD_LEFT)
-            . str_pad($totalRows, 7, '0', STR_PAD_LEFT);
+            . str_pad('MERCTRAN', 8, ' ', STR_PAD_RIGHT)
+            . $transactionDateTime
+            . str_pad($storeId, 4, '0', STR_PAD_LEFT)
+            . str_pad($totalRecords, 7, '0', STR_PAD_LEFT);
     }
 }
-
-

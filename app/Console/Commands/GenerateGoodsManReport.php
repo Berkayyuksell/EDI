@@ -12,11 +12,7 @@ class GenerateGoodsManReport extends Command
      *
      * @var string
      */
-    protected $signature = 'goodsman:generate-report 
-                            {startDate} 
-                            {endDate} 
-                            {transactionDate} 
-                            {storeID}';
+    protected $signature = 'goodsman:generate-report';
 
     /**
      * The console command description.
@@ -30,13 +26,12 @@ class GenerateGoodsManReport extends Command
      */
     public function handle(GoodsManReportService $service)
     {
-        $startDate = $this->argument('startDate');
-        $endDate = $this->argument('endDate');
-        $transactionDate = $this->argument('transactionDate');
-        $storeID = $this->argument('storeID');
+        $filePath = $service->generateReport();
 
-        $service->generateReport($startDate, $endDate, $transactionDate, $storeID);
-
-        $this->info("GoodsMan report generated successfully!");
+        if ($filePath) {
+            $this->info("GoodsMan report generated successfully: " . $filePath);
+        } else {
+            $this->info("No records to generate report.");
+        }
     }
 }
