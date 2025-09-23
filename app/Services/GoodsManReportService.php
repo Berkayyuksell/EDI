@@ -92,6 +92,17 @@ class GoodsManReportService
             break;
     }
 
+        if($row->transaction_code == '0303'){
+            $CurrenctCode = 'TRY';
+            $unitCostPrice = str_pad(number_format((float)$row->retail_price,2,'',''), 15, '0', STR_PAD_LEFT);
+        }else{
+            $CurrenctCode = '000';
+            $unitCostPrice = '000000000000000';
+        }
+
+     
+
+
         return str_pad('MERCTRAN', 8, ' ', STR_PAD_RIGHT)
             . str_pad($row->store_id_receiver ?? '0', 4, '0', STR_PAD_LEFT)
             . $transactionDateTime
@@ -108,8 +119,8 @@ class GoodsManReportService
             . str_repeat('0', 9)  // TO number
             . str_repeat('0', 9)  // Return number
             . '0'                 
-            . 'TRY'
-            . str_pad(number_format((float)$row->retail_price,2,'',''), 15, '0', STR_PAD_LEFT)
+            . $CurrenctCode
+            . $unitCostPrice
             . str_pad($row->cause_code ?? '', 4, ' ', STR_PAD_RIGHT)
             . str_pad($comment, 25, ' ', STR_PAD_RIGHT);
 
