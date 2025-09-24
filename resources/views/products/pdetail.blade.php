@@ -51,7 +51,7 @@
                 <th>STORE ID</th>
                 <th>STORE Name</th>
                 <th>bill of transport</th>
-                <th>ean number</th>
+                <th>barcode</th>
                 <th>item number </th>
                 <th>box_ean_number</th>
                 <th>item description</th>
@@ -85,9 +85,11 @@
                     <th>{{ $pack->box_ean_number }}</th>
                     <td>{{ $pack->item_description }}</td>
                     <td>{{ $pack->colour}}</td>
-                    <td>{{ $pack->retail_price_1 }}</td>
+                    <td>{{ intval($pack->retail_price_1) }}</td>
                     <td>{{ $pack->quantity }}</td>
                     <th>{{ $pack->bill_of_transport_date }}</th>
+
+
                     <td>
                         <button class="btn btn-sm btn-warning openModalBtn"
                             data-bs-toggle="modal"

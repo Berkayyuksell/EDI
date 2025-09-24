@@ -19,7 +19,9 @@ class PackageController extends Controller
     public function index()
     {
 
-         $package = DB::table('zt_packing_header')->paginate(20);
+         $package = DB::table('zt_packing_header')
+         ->orderByDesc('bill_of_transport_date')
+         ->paginate(20);
 
         // view’e gönder
         return view('products.index', compact('package'));

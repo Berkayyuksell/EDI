@@ -21,6 +21,9 @@
             <a href="{{ url('item') }}" class="btn btn-outline-dark">
                 Ürün Listesi
             </a>
+            <a href="{{ url('item/pricechange') }}" class="btn btn-outline-dark">
+                Fiyat Değişikliği
+            </a>
         </div>
     </div>
 

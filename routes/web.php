@@ -28,6 +28,8 @@ Route::prefix('products')->group(function () {
 
 Route::prefix('item')->group(function(){
     Route::get('/',[ItemController::class ,'index']);
+
+    Route::get('/pricechange',[ItemController::class,'priceChangeList']);
 });
 
 

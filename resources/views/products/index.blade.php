@@ -50,7 +50,8 @@
                     <td>{{ $pack->store_id_deliverer }}</td>
                     <td>{{ $pack->store_id_receiver  }}</td>
                     <td>{{ $pack->bill_of_transport }}</td>
-                    <td>{{ $pack->bill_of_transport_date }}</td>
+                    <th>{{ \Carbon\Carbon::createFromFormat('Ymd', $pack->bill_of_transport_date)->format('d.m.Y') }}</th>
+
                     <td>{{ $pack->recipient}}</td>
                     @if($pack->isApprove == 1)
                         <td class="text-center text-success">

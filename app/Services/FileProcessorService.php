@@ -57,15 +57,14 @@ class FileProcessorService
     public function runBatFile(): void{
              $batFilePath = 'C:\Users\Mtsoft\Desktop\test.bat'; // Bat dosyasının yolu
     
-    // Dosya varlığını kontrol et
+
     if (!file_exists($batFilePath)) {
         throw new \Exception('Bat dosyası bulunamadı: ' . $batFilePath);
     }
     
-    // Bat dosyasını çalıştır
+
     exec($batFilePath, $output, $returnCode);
     
-    // Sonuçları kontrol et
     if ($returnCode === 0) {
         \Log::info('Bat dosyası başarıyla çalıştırıldı', ['output' => $output]);
     } else {
