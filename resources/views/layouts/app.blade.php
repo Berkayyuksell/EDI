@@ -10,7 +10,7 @@
     <!-- Ortak Header -->
     <nav class="navbar navbar-expand-lg navbar-dark bg-dark mb-3">
         <div class="container-fluid">
-            <a class="navbar-brand" href="{{ url('/') }}">📦 Paket Yönetimi</a>
+            <a class="navbar-brand" href="{{ url('/') }}">📦 STEFANEL PANEL</a>
             <div>
                 <a class="btn btn-sm btn-light" href="{{ route('packing.index') }}">Paketler</a>
                 <a class="btn btn-sm btn-light" href="{{ url('item')  }}">Ürünler</a>

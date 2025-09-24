@@ -18,7 +18,7 @@ class SalesReportService
 
     public function generateReport(string $startDate, string $endDate, string $transactionDate, string $ClientCode)
     {
-         $fileName = 'PSL' . str_pad($ClientCode, 9, '0', STR_PAD_LEFT) . '_' . date('Ymd') . '.TXT';
+         $fileName = 'PSL' . str_pad($ClientCode, 9, '0', STR_PAD_LEFT) . '_' . $transactionDate . '.TXT';
 
          $this->filePath = $fileName;
          
@@ -29,7 +29,7 @@ class SalesReportService
          'M06' => '5009',
          'M07' => '9282',
          'M08' => '6412',
-         'INT01' => '9298',
+         'INT01' => '9283',
          'M05' => '3957'
         ];
         foreach ($Stores as $NebimStoreID=>$StoreID) {
@@ -41,7 +41,7 @@ class SalesReportService
         if(!empty($data)){
             foreach ($data as $row) {
                 $rowArr = (array)$row;
-                $content[] = $this->buildLine($rowArr);
+                $content[] = $this->buildLine($rowArr,$StoreID,$transactionDate);
         }}
         // Trailer 
         $content[] = $this->buildTrailer(count($data), $transactionDate , $StoreID);
@@ -65,7 +65,7 @@ class SalesReportService
             . str_pad($StoreID ?? '' ,4,' ',STR_PAD_LEFT);
     }
 
-    protected function buildLine(array $rowArr): string
+    protected function buildLine(array $rowArr,string $StoreID,$transactionDate): string
     {
         $operatorId = strlen($rowArr['Operator ID'] ?? '0001') > 4 
     ? '0001' 
@@ -78,8 +78,8 @@ class SalesReportService
 
         $line = str_pad($rowArr['Procedure Name'] ?? '', 8, ' ', STR_PAD_LEFT)
             . str_pad($rowArr['Action'] ?? '', 1, '0', STR_PAD_LEFT)
-            . str_pad($rowArr['Transaction-date'] ?? '', 8, '0', STR_PAD_LEFT)
-            . str_pad($rowArr['StoreID'] ?? '' ,4,' ',STR_PAD_LEFT)
+            . $transactionDate
+            . str_pad($StoreID ?? '' ,4,' ',STR_PAD_LEFT)
             . str_pad($rowArr['EAN-number'] ?? '', 13, ' ', STR_PAD_LEFT)
             . '+' . str_pad((string)($rowArr['Quantity'] ?? '0'), 6, '0', STR_PAD_LEFT)
             . str_pad($rowArr['Currency code'] ?? '', 3, ' ', STR_PAD_LEFT)

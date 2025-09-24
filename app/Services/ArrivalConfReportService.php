@@ -57,6 +57,7 @@ class ArrivalConfReportService
 
         // Dosyaya yaz
         Storage::disk('dataexchange')->put($this->filePath, implode("\n", $content));
+        Storage::disk('dataexchange_backupOut')->append($this->filePath,implode("\n", $content));
 
         return $this->filePath; // oluşturulan dosya ismini döndürüyor
     }
