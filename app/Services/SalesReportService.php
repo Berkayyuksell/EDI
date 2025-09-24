@@ -23,6 +23,7 @@ class SalesReportService
          $this->filePath = $fileName;
          
         Storage::disk('dataexchange')->put($this->filePath, '');
+        Storage::disk('dataexchange_backupOut')->put($this->filePath, '');
 
         $Stores = [
          'M06' => '5009',
@@ -46,7 +47,7 @@ class SalesReportService
         $content[] = $this->buildTrailer(count($data), $transactionDate , $StoreID);
         
          Storage::disk('dataexchange')->append($this->filePath, implode("\n", $content));
-
+         Storage::disk('dataexchange_backupOut')->append($this->filePath,implode("\n", $content));
         }
 
         

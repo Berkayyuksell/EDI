@@ -19,10 +19,9 @@ class RunBatFileCommand extends Command
 
     public function handle()
     {
-        $batFile = 'C:\\dromos\\DromosCLI\\dromoscli.bat';
-        $workingDir = 'C:\\DROMOS\\profiles';
-
-        $fullCommand = "cd /d \"$workingDir\" && call \"$batFile\"";
+        $workingDir = 'C:\\DROMOS\\DromosCLI';
+		$batFile = 'C:\\DROMOS\\DromosCLI\\dromoscli.bat';
+		$fullCommand = "cd /d \"$workingDir\" && call \"$batFile\"";
 
         exec($fullCommand, $output, $returnCode);
 

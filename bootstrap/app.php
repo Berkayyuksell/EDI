@@ -24,7 +24,8 @@ return Application::configure(basePath: dirname(__DIR__))
         $schedule->command('sales:generate-report ' .  $today . ' ' . $today . ' ' . $today . ' 29991')->timezone('Europe/Istanbul')->dailyAt('23:00');
         $schedule->command('arrivalconf:generate-report')->timezone('Europe/Istanbul')->dailyAt('23:02');
         $schedule->command('goodsman:generate-report')->timezone('Europe/Istanbul')->dailyAt('23:04');
-        $schedule->command('files:process')->timezone('Europe/Istanbul')->dailyAt('23:06');
+        $schedule->command('run:bat')->timezone('Europe/Istanbul')->dailyAt('23:06');
+        $schedule->command('files:process')->timezone('Europe/Istanbul')->dailyAt('23:20');
 
     })
     ->create();

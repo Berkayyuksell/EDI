@@ -42,8 +42,6 @@ class GenerateSalesReport extends Command
         $service->generateReport($startDate, $endDate, $transactionDate, $storeID);
         
         Log::info('Raporlama basarili');
-        $processor->transferFileOut();
-        $processor->runBatFile();
            
     }
 }

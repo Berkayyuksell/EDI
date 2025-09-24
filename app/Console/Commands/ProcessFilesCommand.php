@@ -24,7 +24,6 @@ class ProcessFilesCommand extends Command
             $this->processor->processFile(Storage::disk('dataexchangeIn')->path($file));
             
         }
-     // $this->processor->runBatFİle();
         $this->processor->transferFileIn();
         
 
